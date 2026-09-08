@@ -1,0 +1,89 @@
+@startuml Diagrama de Entidad Relacion
+left to right direction
+entity Producto {
+    codigoDeBarras: int <<PK>>
+    descripcion: String
+    precioCosto: decimal
+    porcentajeGanancia: decimal
+    stock: int
+    stockMinimo: int
+    idMarca: int <<FK>>
+    idCategoria: int <<FK>>
+}
+
+entity Marca {
+    idMarca: int <<PK>>
+    nombre: String
+}
+
+entity Categoria {
+    idCategoria: int <<PK>>
+    nombre: String
+}
+
+entity Entrada {
+    idEntrada: int <<PK>>
+    fecha: date
+}
+
+entity DetalleEntrada {
+    idDetalleEntrada: int <<PK>>
+    cantidad: int
+    entrada: int <<FK>>
+    producto: int <<FK>>
+}
+
+entity Salida {
+    idSalida: int <<PK>>
+    fecha: date
+}
+
+entity DetalleSalida {
+    idDetalleSalida: int <<PK>>
+    cantidad: int
+    idSalida: int <<FK>>
+    idProducto: int <<FK>>
+}
+
+entity Usuario {
+    idUsuario: int <<PK>>
+    nombre: string
+    apellido: string
+    email: string
+    contraseña: string
+}
+
+entity Venta {
+    idVenta: int <<PK>>
+    fecha: date
+    idUsuario: int <<FK>>
+}
+
+entity DetalleVenta {
+    idDetalleVenta: int <<PK>>
+    cantidad: int
+    precioUnitario: int
+    subtotal: int
+    idVenta: int <<FK>>
+    idProducto: int <<FK>>
+}
+
+entity Notificacion {
+    idNotificacion: int <<PK>>
+    mensaje: String
+    fechaYHora: date
+    idProducto: int <<FK>>
+}
+
+Producto }|--|| Marca
+Producto }|--|| Categoria
+DetalleEntrada }|--|| Entrada
+DetalleEntrada }|--|| Producto
+DetalleSalida }|--|| Salida
+DetalleSalida }|--|| Producto
+DetalleVenta }|--|| Venta
+DetalleVenta }|--|| Producto
+Venta }|--|| Usuario
+Notificacion }|--|| Producto
+
+@enduml
