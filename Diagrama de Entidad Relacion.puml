@@ -1,12 +1,115 @@
 @startuml Diagrama de Entidad Relacion
 left to right direction
+entity Usuario {
+    idUsuario: int <<PK>>
+    nombre: String
+    apellido: String
+    email: String
+    contraseña: String
+    rol: String  ' 'Dueña' | 'Empleado'
+    activo: boolean
+}
+
+entity Turno {
+    idTurno: int <<PK>>
+    fechaInicio: date
+    fechaFin: date
+    horaInicio: time
+    horaFin: time
+    idUsuario: int <<FK>>
+    estado: String  ' 'Abierto' | 'Cerrado'
+    montoEfectivoContado: decimal
+    montoEfectivoEsperado: decimal
+    diferencia: decimal
+}
+
+entity TurnoUsuario {
+    idTurno: int <<FK>>
+    idUsuario: int <<FK>>
+    fechaEntrda:date
+    fechaSalida: date
+    horaEntrada: time
+    horaSalida: time
+}
+
+entity Venta {
+    idVenta: int <<PK>>
+    fecha: date
+    hora: time
+    idTurno: int <<FK>>
+    idUsuario: int <<FK>>
+    idCliente: int <<FK>>
+    total: decimal
+    montoRedondeo: decimal
+}
+
+entity PagoVenta {
+    idPagoVenta: int <<PK>>
+    idVenta: int <<FK>>
+    idMetodoPago: int <<FK>>
+    idCuentaDestino: int <<FK>>
+    monto: decimal
+}
+
+entity MetodoPago {
+    idMetodoPago: int <<PK>>
+    nombre: String
+}
+
+entity CuentaDestino {
+    idCuentaDestino: int <<PK>>
+    nombre: String
+    activa: boolean
+}
+
+entity DetalleVenta {
+    idDetalleVenta: int <<PK>>
+    cantidad: decimal
+    precioUnitario: decimal
+    subtotal: decimal
+    idVenta: int <<FK>>
+    idProducto: int <<FK>>
+    idPromocion: int <<FK>>
+}
+
+entity Promocion {
+    idPromocion: int <<PK>>
+    nombre: String
+    tipo: String
+    valorDescuento: decimal
+    activa: boolean
+}
+
+entity PromocionProducto {
+    idPromocion: int <<FK>>
+    idProducto: int <<FK>>
+    cantidad: decimal
+}
+
+entity Cliente {
+    idCliente: int <<PK>>
+    nombre: String
+    saldoActual: decimal
+}
+
+entity MovimientoCuentaCorriente {
+    idMovimiento: int <<PK>>
+    fecha: date
+    tipo: String  ' 'Venta' | 'Pago'
+    monto: decimal
+    idCliente: int <<FK>>
+    idVenta: int <<FK>>
+}
+
 entity Producto {
-    codigoDeBarras: int <<PK>>
+    codigoDeBarras: String <<PK>>
     descripcion: String
-    precioCosto: decimal
     porcentajeGanancia: decimal
-    stock: int
-    stockMinimo: int
+    precioVenta: decimal
+    unidadMedida: String
+    stock: decimal
+    stockMinimo: decimal
+    esElaborado: boolean
     idMarca: int <<FK>>
     idCategoria: int <<FK>>
 }
@@ -21,69 +124,129 @@ entity Categoria {
     nombre: String
 }
 
+entity ProductoProveedor {
+    idProductoProveedor: int <<PK>>
+    idProducto: string <<FK>>
+    idProveedor: int <<FK>>
+    precioCosto: decimal
+}
+
+entity Proveedor {
+    idProveedor: int <<PK>>
+    nombre: String
+}
+
 entity Entrada {
     idEntrada: int <<PK>>
     fecha: date
+    idProveedor: int <<FK>>
 }
 
 entity DetalleEntrada {
     idDetalleEntrada: int <<PK>>
-    cantidad: int
-    entrada: int <<FK>>
-    producto: int <<FK>>
+    cantidad: decimal
+    precioCosto: decimal
+    idEntrada: int <<FK>>
+    idProducto: int <<FK>>
+}
+
+entity Lote {
+    idLote: int <<PK>>
+    idDetalleEntrada: int <<FK>>
+    idProducto: int <<FK>>
+    cantidad: decimal
+    cantidadDisponible: decimal
+    fechaVencimiento: date
 }
 
 entity Salida {
     idSalida: int <<PK>>
     fecha: date
+    categoria: String
+    idUsuario: int <<FK>>
+    observacion: String
 }
 
 entity DetalleSalida {
     idDetalleSalida: int <<PK>>
-    cantidad: int
+    cantidad: decimal
     idSalida: int <<FK>>
     idProducto: int <<FK>>
+    idLote: int <<FK>>
 }
 
-entity Usuario {
-    idUsuario: int <<PK>>
-    nombre: string
-    apellido: string
-    email: string
-    contraseña: string
-}
-
-entity Venta {
-    idVenta: int <<PK>>
+entity Transformacion {
+    idTransformacion: int <<PK>>
     fecha: date
+    idProductoResultante: int <<FK>>
+    cantidadProducida: decimal
     idUsuario: int <<FK>>
 }
 
-entity DetalleVenta {
-    idDetalleVenta: int <<PK>>
-    cantidad: int
-    precioUnitario: int
-    subtotal: int
-    idVenta: int <<FK>>
+entity DetalleTransformacion {
+    idDetalleTransformacion: int <<PK>>
+    idTransformacion: int <<FK>>
     idProducto: int <<FK>>
+    idLote: int <<FK>>
+    cantidad: decimal
 }
 
 entity Notificacion {
     idNotificacion: int <<PK>>
     mensaje: String
     fechaYHora: date
+    tipo: String
     idProducto: int <<FK>>
+    idLote: int <<FK>>
+    leida: boolean
 }
 
-Producto }|--|| Marca
-Producto }|--|| Categoria
-DetalleEntrada }|--|| Entrada
-DetalleEntrada }|--|| Producto
-DetalleSalida }|--|| Salida
-DetalleSalida }|--|| Producto
-DetalleVenta }|--|| Venta
-DetalleVenta }|--|| Producto
-Venta }|--|| Usuario
-Notificacion }|--|| Producto
+Usuario ||--o{ Turno
+Turno ||--o{ TurnoUsuario
+Usuario ||--o{ TurnoUsuario
+
+Turno ||--o{ Venta
+Usuario ||--o{ Venta
+Cliente |o--o{ Venta
+
+Venta ||--o{ PagoVenta
+MetodoPago ||--o{ PagoVenta
+CuentaDestino ||--o{ PagoVenta
+
+Venta ||--o{ DetalleVenta
+Producto ||--o{ DetalleVenta
+Promocion |o--o{ DetalleVenta
+
+Promocion ||--o{ PromocionProducto
+Producto ||--o{ PromocionProducto
+
+Cliente ||--o{ MovimientoCuentaCorriente
+Venta |o--o{ MovimientoCuentaCorriente
+
+Producto }o--|| Marca
+Producto }o--|| Categoria
+
+Producto ||--o{ ProductoProveedor
+Proveedor ||--o{ ProductoProveedor
+
+Proveedor ||--o{ Entrada
+Entrada ||--o{ DetalleEntrada
+Producto ||--o{ DetalleEntrada
+DetalleEntrada ||--o{ Lote
+Producto ||--o{ Lote
+
+Usuario ||--o{ Salida
+Salida ||--o{ DetalleSalida
+Producto ||--o{ DetalleSalida
+Lote |o--o{ DetalleSalida
+
+Producto ||--o{ Transformacion : "resultante"
+Usuario ||--o{ Transformacion
+Transformacion ||--o{ DetalleTransformacion
+Producto ||--o{ DetalleTransformacion
+Lote |o--o{ DetalleTransformacion
+
+Producto ||--o{ Notificacion
+Lote |o--o{ Notificacion
 
 @enduml
